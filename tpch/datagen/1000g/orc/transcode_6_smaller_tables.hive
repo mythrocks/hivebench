@@ -1,0 +1,15 @@
+set hive.merge.mapredfiles=true;
+set hive.merge.mapfiles=true;
+
+from mythdb_1000g_text.customer insert overwrite table mythdb_1000g_orc.customer_partitioned_mktsegment partition ( C_MKTSEGMENT ) select c_custkey, c_name, c_address, c_nationkey, c_phone, c_acctbal, c_comment, c_mktsegment ;
+
+from mythdb_1000g_text.supplier insert overwrite table mythdb_1000g_orc.supplier_partitioned_nationkey partition (S_NATIONKEY) select S_SUPPKEY, S_NAME, S_ADDRESS, S_PHONE, S_ACCTBAL, S_COMMENT, S_NATIONKEY ;
+
+from mythdb_1000g_text.nation insert overwrite table mythdb_1000g_orc.nation select n_nationkey, n_name, n_regionkey, n_comment;
+
+from mythdb_1000g_text.region insert overwrite table mythdb_1000g_orc.region select r_regionkey, r_name, r_comment;
+
+from mythdb_1000g_text.part insert overwrite table mythdb_1000g_orc.part select p_partkey, p_name, p_mfgr, p_brand, p_type, p_size, p_container, p_retailprice, p_comment ;
+
+from mythdb_1000g_text.partsupp insert overwrite table mythdb_1000g_orc.partsupp select ps_partkey, ps_suppkey, ps_availqty, ps_supplycost, ps_comment;
+

@@ -1,0 +1,32 @@
+
+set mapreduce.input.fileinputformat.split.maxsize=120108864;
+set hive.exec.reducers.bytes.per.reducer=300000000;
+use mythdb_10000g_rcfile;
+drop table revenue_cached;
+drop table max_revenue_cached;
+drop table q15_top_supplier_cached;
+create table revenue_cached as
+select
+  l_suppkey as supplier_no, sum(l_extendedprice * (1 - l_discount)) as total_revenue
+from
+  lineitem_partitioned_shipdate
+where
+  l_shipdate >= '1996-01-01' and l_shipdate < '1996-04-01'
+group by l_suppkey;
+
+create table max_revenue_cached as
+select
+  max(total_revenue) as max_revenue
+from
+  revenue_cached;
+
+create table q15_top_supplier_cached as
+select
+  s_suppkey, s_name, s_address, s_phone, total_revenue
+from supplier_partitioned_nationkey s join revenue_cached r
+  on
+    s.s_suppkey = r.supplier_no
+  join max_revenue_cached m
+  on
+    r.total_revenue = m.max_revenue 
+order by s_suppkey;

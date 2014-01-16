@@ -1,0 +1,19 @@
+use mythdb_1000g_rcfile;
+drop table q4_order_priority_tmp_cached;
+drop table q4_order_priority_cached;
+CREATE TABLE q4_order_priority_tmp_cached as
+select
+  DISTINCT l_orderkey as O_ORDERKEY
+from
+  lineitem_partitioned_shipdate
+where
+  l_commitdate < l_receiptdate and l_orderkey is not null;
+
+CREATE TABLE q4_order_priority_cached as
+select o_orderpriority, count(1) as order_count
+from
+  orders_partitioned_orderdate o join q4_order_priority_tmp_cached t
+  on
+o.o_orderkey = t.o_orderkey and o.o_orderdate >= '1993-07-01' and o.o_orderdate < '1993-10-01'
+group by o_orderpriority 
+order by o_orderpriority;

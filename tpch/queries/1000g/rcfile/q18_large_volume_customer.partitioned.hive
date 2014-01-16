@@ -1,0 +1,28 @@
+
+use mythdb_1000g_rcfile;
+drop table q18_tmp_cached;
+drop table q18_large_volume_customer_cached;
+create table q18_tmp_cached as
+select
+  l_orderkey, sum(l_quantity) as t_sum_quantity
+from
+  lineitem_partitioned_shipdate
+where l_orderkey is not null
+group by l_orderkey;
+
+create table q18_large_volume_customer_cached as
+select
+  c_name,c_custkey,o_orderkey,o_orderdate,o_totalprice,sum(l_quantity)
+from
+  customer_partitioned_mktsegment c join orders_partitioned_orderdate o
+  on
+    c.c_custkey = o.o_custkey
+  join q18_tmp_cached t
+  on
+    o.o_orderkey = t.l_orderkey and o.o_orderkey is not null and t.t_sum_quantity > 300
+  join lineitem_partitioned_shipdate l
+  on
+    o.o_orderkey = l.l_orderkey and l.l_orderkey is not null
+group by c_name,c_custkey,o_orderkey,o_orderdate,o_totalprice
+order by o_totalprice desc,o_orderdate 
+limit 100;
