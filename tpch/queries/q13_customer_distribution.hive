@@ -1,0 +1,19 @@
+!echo ============================== Begin q13 ====================================;
+
+drop table q13_customer_distribution_cached;
+create table q13_customer_distribution_cached as
+select
+  c_count, count(1) as custdist
+from
+  (select
+     c_custkey, count(o_orderkey) as c_count
+   from
+     customer_partitioned_mktsegment c left outer join orders_partitioned_orderdate o
+     on
+       c.c_custkey = o.o_custkey and not o.o_comment like '%special%requests%'
+   group by c_custkey
+   ) c_orders
+group by c_count
+order by custdist desc, c_count desc;
+
+!echo ============================== End q13 ====================================;
